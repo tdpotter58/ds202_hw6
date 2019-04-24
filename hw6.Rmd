@@ -1,0 +1,91 @@
+---
+title: "Homework 6"
+author: "Tim Potter"
+date: "April 23, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(RColorBrewer)
+```
+
+## Homework 6
+
+```{r load}
+best_in_show <- readxl::read_xlsx('KIB - Best in Show.xlsx', sheet='Best in show', skip = 5)
+best_in_show_full <- readxl::read_xlsx('KIB - Best in Show.xlsx', sheet='Best in show full sheet', skip = 2)
+
+names(best_in_show)
+
+best_in_show = best_in_show[2:173,]
+best_in_show$..2 = NULL
+best_in_show$`exclude?` = NULL
+best_in_show$..4 = NULL
+best_in_show$..6 = NULL
+best_in_show$..8 = NULL
+best_in_show$..13 = NULL
+best_in_show$..16 = NULL
+best_in_show$..20 = NULL
+best_in_show$..22 = NULL
+best_in_show$..42 = NULL
+best_in_show$..45 = NULL
+best_in_show$..51 = NULL
+best_in_show$..55 = NULL
+best_in_show$note = NULL
+best_in_show$source = NULL
+best_in_show$link = NULL
+
+best_in_show <- best_in_show %>%
+  rename(popularity = `popularity ranking (1-173, 1 = most popular)`,
+         congenital_ailments = `congenital ailments: summary / areas affected`)
+
+names(best_in_show_full)
+best_in_show_full = best_in_show_full[-1,]
+best_in_show_full$..10 = NULL
+best_in_show_full$..2 = NULL
+best_in_show_full$..25 = NULL
+best_in_show_full$..31 = NULL
+best_in_show_full$..37 = NULL
+best_in_show_full$..4 = NULL
+best_in_show_full$..49 = NULL
+best_in_show_full$..62 = NULL
+best_in_show_full$..72 = NULL
+best_in_show_full$..73 = NULL
+best_in_show_full$..74 = NULL
+best_in_show_full$..75 = NULL
+best_in_show_full$note = NULL
+best_in_show_full$source = NULL
+best_in_show_full$link = NULL
+best_in_show_full$`exclude?` = NULL
+best_in_show_full$`most abandoned?` = NULL
+
+best_in_show_full <- best_in_show_full %>%
+  rename(Dog_Breed = `Sources - see bottom right`,
+         Popularity_pure_breeds = `POPULARITY IN US..6`,
+         Popularity_all_breeds = `POPULARITY IN US..7`,
+         Lifetime_cost_percentage = `5 LIFETIME COST`)
+
+
+str(best_in_show_full)
+best_in_show_full <- best_in_show_full %>%
+  mutate(Popularity_all_breeds = as.numeric(Popularity_all_breeds),
+         Popularity_pure_breeds = as.numeric(Popularity_pure_breeds),
+         `weight (kg)` = as.numeric(`weight (kg)`),
+         `INTELLIGENCE (TRAINABILITY) ranking` = as.numeric(`INTELLIGENCE (TRAINABILITY) ranking`),
+         `1 INTELLIGENCE (TRAINABILITY) ranking` = as.numeric(`1 INTELLIGENCE (TRAINABILITY) ranking`))
+
+best_in_show_full$category <- factor(best_in_show_full$category)
+
+best_in_show_full <- na.omit(best_in_show_full)
+```
+
+## Graphing
+
+```{r graph}
+ggplot(data = best_in_show_full, aes(x = `datadog score`, y = Popularity_all_breeds)) + geom_point(aes(size = best_in_show_full$`weight (kg)`, shape = best_in_show_full$category, color = best_in_show_full$`INTELLIGENCE (TRAINABILITY) ranking`), na.rm = TRUE) + scale_y_reverse(limits = c(53,0)) + geom_text_repel(aes(label = best_in_show_full$Dog_Breed), size = 3, na.rm = TRUE) + scale_shape_manual(values=1:nlevels(best_in_show_full$category)) +labs(title = "Best in Show", x = "DataDog Score", y= "Popularity Ranking", size = "Weight (kg)", shape = "Category", color = "Intelligence Ranking") + theme_gray()
+
+```
